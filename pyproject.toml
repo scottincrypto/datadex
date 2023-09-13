@@ -16,7 +16,7 @@ dependencies = [
     "nbclient",
     "nbformat",
     "numpy",
-    "pandas",
+    "pandas==2.0.3", # clash with duckdb, pin to 2.0.x
     "polars",
     "pyarrow",
     "regex",
