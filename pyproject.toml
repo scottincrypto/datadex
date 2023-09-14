@@ -5,6 +5,7 @@ dependencies = [
     "altair",
     "dagster",
     "dagster-dbt",
+    "dbt-sqlserver",
     "dbt-core",
     "dbt-duckdb",
     "duckdb",
