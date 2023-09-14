@@ -33,4 +33,4 @@ COPY . /workspaces/datadex
 RUN pip install -e ".[dev]"
 
 # configure git
-RUN git config --global user.email "scottincrypto@gmail.com" && config --global user.name "scott simpson"
+RUN git config --global user.email "scottincrypto@gmail.com" && git config --global user.name "scott simpson"
