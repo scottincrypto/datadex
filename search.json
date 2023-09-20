@@ -1,0 +1,72 @@
+[
+  {
+    "objectID": "reports/index.html",
+    "href": "reports/index.html",
+    "title": "Notebooks",
+    "section": "",
+    "text": "Example Report\n\n\n\n\n\n\n\n\n\n\n\n\nJan 1, 2023\n\n\nDavid Gasquez\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "README.html",
+    "href": "README.html",
+    "title": "\nD A T A D E X\n",
+    "section": "",
+    "text": "Collaborate on Open Data using Open Source Tools\nDatadex is a platform where people collaborate on Open Data using modern and open source tools and frameworks."
+  },
+  {
+    "objectID": "README.html#setup",
+    "href": "README.html#setup",
+    "title": "\nD A T A D E X\n",
+    "section": "⚙️ Setup",
+    "text": "⚙️ Setup\nThe fastest way to start using Datadex is via VSCode Remote Containers. Once inside the develpment environment, you’ll only need to run make deps.\n\n\n\n\n\nPS: The development environment can also run in your browser thanks to GitHub Codespaces!"
+  },
+  {
+    "objectID": "README.html#motivation",
+    "href": "README.html#motivation",
+    "title": "\nD A T A D E X\n",
+    "section": "🎯 Motivation",
+    "text": "🎯 Motivation\nThis small project was created after thinking how an Open Data Protocol could look like!"
+  },
+  {
+    "objectID": "README.html#acknowledgements",
+    "href": "README.html#acknowledgements",
+    "title": "\nD A T A D E X\n",
+    "section": "👏 Acknowledgements",
+    "text": "👏 Acknowledgements\n\nThis proof of concept was created thanks to open source projects like DuckDB and dbt.\nDatadex name was inspired by Juan Benet awesome data projects."
+  },
+  {
+    "objectID": "reports/2023-01-01-Datadex.html",
+    "href": "reports/2023-01-01-Datadex.html",
+    "title": "Example Report",
+    "section": "",
+    "text": "Reports are a great way to share your work with others. Thanks to Quarto and Datadex, you can create beautiful reports with a few lines of code and share them with the world. Let’s go through a few interesting things we can do.\nStarting with the most basic thing, we can display Pandas DataFrames as tables.\n\n\nCode\nfrom IPython.display import Markdown\nfrom tabulate import tabulate\n\ntable = [\n    [\"Sun\", 696000, 1989100000],\n    [\"Earth\", 6371, 5973.6],\n    [\"Moon\", 1737, 73.5],\n    [\"Mars\", 3390, 641.85],\n]\nMarkdown(tabulate(table, headers=[\"Planet\", \"R (km)\", \"mass (x 10^29 kg)\"]))\n\n\n\n\nTable 1: Planets\n\n\nPlanet\nR (km)\nmass (x 10^29 kg)\n\n\n\n\nSun\n696000\n1.9891e+09\n\n\nEarth\n6371\n5973.6\n\n\nMoon\n1737\n73.5\n\n\nMars\n3390\n641.85\n\n\n\n\n\n\nAnd, of course, plotting arbitrary data is easy.\n\n\nCode\nimport matplotlib.pyplot as plt\n\nplt.plot([1, 23, 2, 4])\nplt.show()\n\nplt.plot([8, 65, 23, 90])\nplt.show()\n\n\n\n\n\n\n\n\n(a) First\n\n\n\n\n\n\n\n(b) Second\n\n\n\n\nFigure 1: Charts\n\n\n\nWe can improve the graphs making them dynamic!\n\n\nCode\nimport altair as alt\nimport pandas as pd\nimport numpy as np\n\nalt.themes.enable(\"vox\")\n\nnp.random.seed(42)\nsource = pd.DataFrame(\n    np.cumsum(np.random.randn(100, 3), 0).round(2),\n    columns=[\"A\", \"B\", \"C\"],\n    index=pd.RangeIndex(100, name=\"x\"),\n)\nsource = source.reset_index().melt(\"x\", var_name=\"category\", value_name=\"y\")\n\n# Create a selection that chooses the nearest point & selects based on x-value\nnearest = alt.selection_point(nearest=True, on=\"mouseover\", fields=[\"x\"], empty=False)\n\n# The basic line\nline = (\n    alt.Chart(source)\n    .mark_line(interpolate=\"basis\")\n    .encode(x=\"x:Q\", y=\"y:Q\", color=\"category:N\")\n)\n\n# Transparent selectors across the chart. This is what tells us\n# the x-value of the cursor\nselectors = (\n    alt.Chart(source)\n    .mark_point()\n    .encode(\n        x=\"x:Q\",\n        opacity=alt.value(0),\n    )\n    .add_params(nearest)\n)\n\n# Draw points on the line, and highlight based on selection\npoints = line.mark_point().encode(\n    opacity=alt.condition(nearest, alt.value(1), alt.value(0))\n)\n\n# Draw text labels near the points, and highlight based on selection\ntext = line.mark_text(align=\"left\", dx=5, dy=-5).encode(\n    text=alt.condition(nearest, \"y:Q\", alt.value(\" \"))\n)\n\n# Draw a rule at the location of the selection\nrules = (\n    alt.Chart(source)\n    .mark_rule(color=\"gray\")\n    .encode(\n        x=\"x:Q\",\n    )\n    .transform_filter(nearest)\n)\n\n# Put the five layers into a chart and bind the data\nalt.layer(line, selectors, points, rules, text).properties(\n    width=\"container\", height=400\n)\n\n\n\n\n\n\n\n\nSince we’re in the Datadex environment, we can access the dbt models in out local DuckDB database.\n\n\nCode\nimport duckdb\nimport os\n\nDATA_DIR = os.getenv(\"DATA_DIR\")\n\ncon = duckdb.connect(database=DATA_DIR + \"/local.duckdb\", read_only=True)\n\ndf = con.sql(\"from climate_co2_global_trend\").df()\n\nc = (\n    alt.Chart(df)\n    .mark_line()\n    .encode(\n        x=alt.X(\"date:T\", title=\"Date\"),\n        y=alt.Y(\"trend:Q\", scale=alt.Scale(domain=[390, 430]), title=\"CO2 (ppm)\"),\n        tooltip=[\n            alt.Tooltip(\"date:T\", title=\"Date\"),\n            alt.Tooltip(\"trend:Q\", title=\"CO2 (ppm)\"),\n        ],\n    )\n    .properties(width=\"container\", height=400)\n)\n\nc.display()"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "\nD A T A D E X\n",
+    "section": "",
+    "text": "Collaborate on Open Data using Open Source Tools\nDatadex is a platform where people collaborate on Open Data using modern and open source tools and frameworks."
+  },
+  {
+    "objectID": "index.html#setup",
+    "href": "index.html#setup",
+    "title": "\nD A T A D E X\n",
+    "section": "⚙️ Setup",
+    "text": "⚙️ Setup\nThe fastest way to start using Datadex is via VSCode Remote Containers. Once inside the develpment environment, you’ll only need to run make deps.\n\n\n\n\n\nPS: The development environment can also run in your browser thanks to GitHub Codespaces!"
+  },
+  {
+    "objectID": "index.html#motivation",
+    "href": "index.html#motivation",
+    "title": "\nD A T A D E X\n",
+    "section": "🎯 Motivation",
+    "text": "🎯 Motivation\nThis small project was created after thinking how an Open Data Protocol could look like!"
+  },
+  {
+    "objectID": "index.html#acknowledgements",
+    "href": "index.html#acknowledgements",
+    "title": "\nD A T A D E X\n",
+    "section": "👏 Acknowledgements",
+    "text": "👏 Acknowledgements\n\nThis proof of concept was created thanks to open source projects like DuckDB and dbt.\nDatadex name was inspired by Juan Benet awesome data projects."
+  }
+]
