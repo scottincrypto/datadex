@@ -1,3 +1,18 @@
 {
-    "dbt.queryLimit": 500
+    "dbt.queryLimit": 500,
+    "sqltools.connections": [
+        {
+            "server": "10.105.5.41",
+            "port": 5906,
+            "useHTTPS": false,
+            "database": "idm",
+            "username": "IDM",
+            "password": "hV!cH@dB#41",
+            "tls": {},
+            "previewLimit": 50,
+            "driver": "ClickHouse",
+            "name": "idm"
+        }
+    ],
+    "dataworkspace.excludedProjects": []
 }

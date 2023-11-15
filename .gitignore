@@ -139,5 +139,5 @@ data/**
 /.quarto/
 
 # Ignore everything under notebooks except .gitkeep
-notebooks/**
+# notebooks/**
 !notebooks/.gitkeep
